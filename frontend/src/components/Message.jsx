@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import emojiRegex from "emoji-regex";
+import { marked } from "marked";
+import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiVolumeX, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck } from "react-icons/fi";
 import { LuBookOpen } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -15,14 +17,34 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
   const [thinkingExpanded, setThinkingExpanded] = useState(true);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState(initialFeedback || null); // "like" | "dislike" | null
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const speak = () => {
-    if ("speechSynthesis" in window) {
+    if (!("speechSynthesis" in window)) return;
+    if (isSpeaking) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(content);
-      window.speechSynthesis.speak(utterance);
+      setIsSpeaking(false);
+      return;
     }
+    const toPlainText = (md) => {
+      const html = marked(md);
+      const el = document.createElement("div");
+      el.innerHTML = html;
+      return (el.textContent ?? "").replace(emojiRegex(), "").replace(/\s+/g, " ").trim();
+    };
+    const cleaned = toPlainText(content);
+    const utterance = new SpeechSynthesisUtterance(cleaned);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
   };
+
+  // Clear speaking state if this message unmounts mid-speech
+  useEffect(() => {
+    return () => { if (isSpeaking) window.speechSynthesis.cancel(); };
+  }, [isSpeaking]);
 
   const copyText = () => {
     navigator.clipboard.writeText(content).then(() => {
@@ -148,8 +170,12 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
                 <FiThumbsDown size={14} />
               </button>
             )}
-            <button className="action-btn" onClick={speak} title="Read aloud">
-              <FiVolume2 size={14} />
+            <button
+              className={`action-btn ${isSpeaking ? "action-active" : ""}`}
+              onClick={speak}
+              title={isSpeaking ? "Stop reading" : "Read aloud"}
+            >
+              {isSpeaking ? <FiVolumeX size={14} /> : <FiVolume2 size={14} />}
             </button>
           </div>
         )}
