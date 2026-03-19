@@ -1,8 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiTrash2, FiUser, FiLogOut, FiChevronLeft, FiChevronRight, FiPlusCircle } from "react-icons/fi";
 
+const COLLAPSE_BREAKPOINT = 768;
+
 export default function Sidebar({ conversations, activeId, onSelect, onNew, onDelete, onLogout, username }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < COLLAPSE_BREAKPOINT);
+  const userToggledRef = useRef(false);
+
+  const toggle = () => {
+    userToggledRef.current = true;
+    setCollapsed((v) => !v);
+  };
+
+  useEffect(() => {
+    const onResize = () => {
+      if (!userToggledRef.current) {
+        setCollapsed(window.innerWidth < COLLAPSE_BREAKPOINT);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const handleDelete = (e, id) => {
     e.stopPropagation();
@@ -12,7 +30,7 @@ export default function Sidebar({ conversations, activeId, onSelect, onNew, onDe
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-top">
-        <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)} title="Toggle sidebar">
+        <button className="sidebar-toggle" onClick={toggle} title="Toggle sidebar">
           {collapsed ? <FiChevronRight size={18} /> : <FiChevronLeft size={18} />}
         </button>
         {!collapsed && (

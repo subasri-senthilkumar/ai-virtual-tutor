@@ -238,6 +238,19 @@ html {
   padding: 8px;
 }
 
+.conversation-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
 .conversation-item {
   display: flex;
   align-items: center;
