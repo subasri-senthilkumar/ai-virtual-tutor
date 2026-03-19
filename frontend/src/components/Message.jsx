@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import emojiRegex from "emoji-regex";
 import { marked } from "marked";
 import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiVolumeX, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck, FiMonitor } from "react-icons/fi";
@@ -20,33 +20,76 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
   const [feedback, setFeedback] = useState(initialFeedback || null); // "like" | "dislike" | null
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
+  const ttsAbortRef = useRef(null);
+  const ttsAudioRef = useRef(null);
 
-  const speak = () => {
-    if (!("speechSynthesis" in window)) return;
+  const speak = async () => {
+    // Stop if already playing
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      ttsAbortRef.current?.abort();
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        URL.revokeObjectURL(ttsAudioRef.current.src);
+        ttsAudioRef.current = null;
+      }
       setIsSpeaking(false);
       return;
     }
+
+    // Strip markdown → plain text
     const toPlainText = (md) => {
       const html = marked(md);
       const el = document.createElement("div");
       el.innerHTML = html;
       return (el.textContent ?? "").replace(emojiRegex(), "").replace(/\s+/g, " ").trim();
     };
+
     const cleaned = toPlainText(content);
-    const utterance = new SpeechSynthesisUtterance(cleaned);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    if (!cleaned) return;
+
+    const abort = new AbortController();
+    ttsAbortRef.current = abort;
     setIsSpeaking(true);
+
+    try {
+      const res = await apiFetch("/api/tts", {
+        method: "POST",
+        body: JSON.stringify({ text: cleaned }),
+        signal: abort.signal,
+      });
+      if (!res || !res.ok) throw new Error("TTS request failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        ttsAudioRef.current = null;
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        ttsAudioRef.current = null;
+      };
+      ttsAudioRef.current = audio;
+      audio.play();
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("TTS error:", e);
+      setIsSpeaking(false);
+    }
   };
 
-  // Clear speaking state if this message unmounts mid-speech
+  // Cleanup on unmount
   useEffect(() => {
-    return () => { if (isSpeaking) window.speechSynthesis.cancel(); };
-  }, [isSpeaking]);
+    return () => {
+      ttsAbortRef.current?.abort();
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        URL.revokeObjectURL(ttsAudioRef.current.src);
+      }
+    };
+  }, []);
 
   const copyText = () => {
     navigator.clipboard.writeText(content).then(() => {

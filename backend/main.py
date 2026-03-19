@@ -2,9 +2,10 @@ import json
 import httpx
 from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, AIMessage
+from groq import Groq
 
 from db import init_db
 from auth import get_current_user, register_user, login_user
@@ -12,7 +13,7 @@ from agent import create_agent_for_user
 from conversations import create_conversation, get_conversations, get_messages, save_message, save_attachments, delete_conversation, save_feedback, generate_title
 from input_processors import image_to_text, document_to_text, audio_to_text
 from tools.memory import list_memories
-from config import AZURE_SPEECH_KEY, AZURE_SPEECH_REGION
+from config import AZURE_SPEECH_KEY, AZURE_SPEECH_REGION, GROQ_API_KEY
 
 app = FastAPI(title="AI Virtual Tutor")
 
@@ -95,6 +96,31 @@ async def avatar_speech_token(user: dict = Depends(get_current_user)):
     if r.status_code != 200:
         raise HTTPException(status_code=r.status_code, detail="Failed to fetch Speech token from Azure")
     return {"token": r.text, "region": AZURE_SPEECH_REGION}
+
+
+# --- TTS (Groq Orpheus) ---
+
+class TTSRequest(BaseModel):
+    text: str
+
+@app.post("/api/tts")
+async def text_to_speech(body: TTSRequest, user: dict = Depends(get_current_user)):
+    """Generate TTS audio via Groq's Orpheus model. Key never leaves the server."""
+    if not GROQ_API_KEY:
+        raise HTTPException(status_code=503, detail="TTS service not configured")
+
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        response = client.audio.speech.create(
+            model="canopylabs/orpheus-v1-english",
+            input=body.text,
+            voice="hannah",
+            response_format="wav",
+        )
+        audio_bytes = response.read()
+        return Response(content=audio_bytes, media_type="audio/wav")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # --- Chat ---
