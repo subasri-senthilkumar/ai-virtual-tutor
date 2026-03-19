@@ -1,0 +1,9 @@
+venv/
+.env
+__pycache__/
+dist/
+node_modules/
+*.db
+*.db-shm
+*.db-wal
+frontend/.gitignore

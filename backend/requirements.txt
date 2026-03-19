@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+langchain>=0.3
+langchain-openai
+langchain-community
+chromadb
+google-search-results
+python-dotenv
+pyjwt
+bcrypt
+python-multipart
+groq
+httpx
