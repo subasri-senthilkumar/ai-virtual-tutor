@@ -1,4 +1,5 @@
 import json
+import httpx
 from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -11,6 +12,7 @@ from agent import create_agent_for_user
 from conversations import create_conversation, get_conversations, get_messages, save_message, save_attachments, delete_conversation, save_feedback, generate_title
 from input_processors import image_to_text, document_to_text, audio_to_text
 from tools.memory import list_memories
+from config import AZURE_SPEECH_KEY, AZURE_SPEECH_REGION
 
 app = FastAPI(title="AI Virtual Tutor")
 
@@ -65,6 +67,34 @@ class FeedbackRequest(BaseModel):
 def message_feedback(message_id: int, body: FeedbackRequest, user: dict = Depends(get_current_user)):
     save_feedback(message_id, body.feedback)
     return {"ok": True}
+
+
+# --- Avatar ---
+
+@app.get("/api/avatar/ice-token")
+async def avatar_ice_token(user: dict = Depends(get_current_user)):
+    """Proxy the Azure ICE token so the Speech key is never sent to the browser."""
+    if not AZURE_SPEECH_KEY or not AZURE_SPEECH_REGION:
+        raise HTTPException(status_code=503, detail="Avatar service not configured")
+    url = f"https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/avatar/relay/token/v1"
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url, headers={"Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY})
+    if r.status_code != 200:
+        raise HTTPException(status_code=r.status_code, detail="Failed to fetch ICE token from Azure")
+    return r.json()
+
+
+@app.get("/api/avatar/speech-token")
+async def avatar_speech_token(user: dict = Depends(get_current_user)):
+    """Exchange the Speech key for a short-lived auth token (valid 10 min)."""
+    if not AZURE_SPEECH_KEY or not AZURE_SPEECH_REGION:
+        raise HTTPException(status_code=503, detail="Avatar service not configured")
+    url = f"https://{AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url, headers={"Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY})
+    if r.status_code != 200:
+        raise HTTPException(status_code=r.status_code, detail="Failed to fetch Speech token from Azure")
+    return {"token": r.text, "region": AZURE_SPEECH_REGION}
 
 
 # --- Chat ---

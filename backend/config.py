@@ -8,6 +8,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
 DATABASE_PATH = os.getenv("DATABASE_PATH", "tutor.db")
+AZURE_SPEECH_KEY = os.getenv("AZURE_SPEECH_KEY", "")
+AZURE_SPEECH_REGION = os.getenv("AZURE_SPEECH_REGION", "")
 
 # Models
 TUTOR_MODEL = os.getenv("TUTOR_MODEL", "minimax/minimax-m2.5:free")

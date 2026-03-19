@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import emojiRegex from "emoji-regex";
 import { marked } from "marked";
-import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiVolumeX, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck } from "react-icons/fi";
+import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiVolumeX, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck, FiMonitor } from "react-icons/fi";
+import AvatarModal from "./AvatarModal";
 import { LuBookOpen } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -18,6 +19,7 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState(initialFeedback || null); // "like" | "dislike" | null
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(false);
 
   const speak = () => {
     if (!("speechSynthesis" in window)) return;
@@ -177,7 +179,17 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
             >
               {isSpeaking ? <FiVolumeX size={14} /> : <FiVolume2 size={14} />}
             </button>
+            <button
+              className={`action-btn ${showAvatar ? "action-active" : ""}`}
+              onClick={() => setShowAvatar((v) => !v)}
+              title={showAvatar ? "Hide avatar" : "Show avatar"}
+            >
+              <FiMonitor size={14} />
+            </button>
           </div>
+        )}
+        {showAvatar && (
+          <AvatarModal text={content} onClose={() => setShowAvatar(false)} />
         )}
       </div>
     </div>
