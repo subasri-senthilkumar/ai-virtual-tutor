@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { LuBookOpen } from "react-icons/lu";
 import { useAuth } from "../auth";
 import { apiFetch } from "../api";
 
@@ -34,7 +35,7 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">🎓</div>
+          <div className="auth-logo"><LuBookOpen size={36} /></div>
           <h1>Create Account</h1>
           <p>Start learning with your AI tutor</p>
         </div>

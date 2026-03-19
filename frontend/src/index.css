@@ -8,19 +8,19 @@
 }
 
 :root {
-  --bg-primary: #0a0f1e;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1f2937;
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-glow: rgba(59, 130, 246, 0.15);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --bg-primary: #212121;
+  --bg-secondary: #171717;
+  --bg-tertiary: #2f2f2f;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --accent: #10a37f;
+  --accent-hover: #0d8a6a;
+  --accent-glow: rgba(16, 163, 127, 0.12);
+  --text-primary: #ececec;
+  --text-secondary: #b4b4b4;
+  --text-muted: #8e8e8e;
   --border: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.15);
-  --success: #22c55e;
+  --success: #10a37f;
   --error: #ef4444;
   --radius: 12px;
   --radius-sm: 8px;
@@ -42,8 +42,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
-    var(--bg-primary);
+  background: var(--bg-primary);
   padding: 20px;
 }
 
@@ -111,19 +110,20 @@ html, body, #root {
 .auth-btn {
   width: 100%;
   padding: 12px;
-  background: var(--accent);
-  color: white;
-  border: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 15px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .auth-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: #383838;
+  border-color: var(--border-hover);
 }
 
 .auth-btn:disabled {
@@ -149,7 +149,7 @@ html, body, #root {
 }
 
 .auth-switch a {
-  color: var(--accent);
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
 }
@@ -209,19 +209,23 @@ html, body, #root {
 .new-chat-btn {
   flex: 1;
   padding: 10px;
-  background: var(--accent);
-  color: white;
-  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .new-chat-btn:hover {
-  background: var(--accent-hover);
+  background: #383838;
+  border-color: var(--border-hover);
 }
 
 .conversation-list {
@@ -246,8 +250,7 @@ html, body, #root {
 }
 
 .conversation-item.active {
-  background: var(--accent-glow);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: var(--bg-tertiary);
 }
 
 .conv-icon {
@@ -269,19 +272,24 @@ html, body, #root {
   border: none;
   cursor: pointer;
   font-size: 12px;
+  color: var(--text-secondary);
   padding: 2px 4px;
   border-radius: 4px;
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity var(--transition), background var(--transition);
+  flex-shrink: 0;
+  line-height: 0;
 }
 
 .conversation-item:hover .conv-delete {
-  display: block;
+  display: flex;
+  align-items: center;
 }
 
 .conv-delete:hover {
   opacity: 1;
-  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .sidebar-bottom {
@@ -439,9 +447,11 @@ html, body, #root {
 }
 
 .message-user .message-text {
+  padding: 7px 18px;
   background: var(--accent);
   color: white;
   border-bottom-right-radius: 4px;
+  max-width: 80%;
 }
 
 .message-assistant .message-text {
@@ -603,6 +613,10 @@ html, body, #root {
   to { transform: rotate(360deg); }
 }
 
+.tool-spinner-icon {
+  animation: spin 1.2s linear infinite;
+}
+
 .tool-expand {
   margin-left: auto;
   font-size: 10px;
@@ -761,10 +775,17 @@ html, body, #root {
 
 /* ---- Chat Input ---- */
 
-.chat-input {
-  padding: 16px 24px 20px;
+.chat-input-wrapper {
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
+  padding: 12px 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.chat-input {
+  width: 100%;
+  max-width: 760px;
 }
 
 .file-chips {
@@ -797,7 +818,7 @@ html, body, #root {
 
 .input-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
@@ -807,11 +828,11 @@ html, body, #root {
 }
 
 .input-row:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06);
 }
 
-.input-row input[type="text"] {
+.chat-textarea {
   flex: 1;
   background: none;
   border: none;
@@ -820,10 +841,31 @@ html, body, #root {
   font-family: inherit;
   padding: 10px 4px;
   outline: none;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
+  max-height: 180px;
 }
 
-.input-row input[type="text"]::placeholder {
+.chat-textarea::placeholder {
   color: var(--text-muted);
+}
+
+.chat-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.chat-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .input-btn {
@@ -832,9 +874,13 @@ html, body, #root {
   cursor: pointer;
   padding: 8px;
   font-size: 18px;
+  color: var(--text-primary);
   border-radius: var(--radius-sm);
-  transition: background var(--transition);
-  opacity: 0.6;
+  transition: background var(--transition), opacity var(--transition);
+  opacity: 0.65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .input-btn:hover:not(:disabled) {
@@ -859,22 +905,26 @@ html, body, #root {
 }
 
 .send-btn {
-  background: var(--accent);
-  color: white;
+  background: var(--text-primary);
+  color: var(--bg-primary);
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font-size: 18px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), opacity var(--transition);
 }
 
 .send-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: #d0d0d0;
 }
 
 .send-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 

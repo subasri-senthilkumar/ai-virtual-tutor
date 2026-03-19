@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { LuBookOpen } from "react-icons/lu";
 import Message from "./Message";
 
 export default function MessageList({ messages, streamingMessage }) {
@@ -12,9 +13,9 @@ export default function MessageList({ messages, streamingMessage }) {
     <div className="message-list">
       {messages.length === 0 && !streamingMessage && (
         <div className="empty-state">
-          <div className="empty-icon">🎓</div>
+          <div className="empty-icon"><LuBookOpen size={48} /></div>
           <h2>AI Virtual Tutor</h2>
-          <p>Ask me anything — upload images, documents, or use voice input!</p>
+          <p>Ask me anything - upload images, documents!</p>
         </div>
       )}
       {messages.map((msg, i) => (

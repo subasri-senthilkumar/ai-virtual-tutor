@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FiCheckCircle, FiLoader } from "react-icons/fi";
 
 export default function ToolStep({ name, input, output, isStreaming }) {
   const [expanded, setExpanded] = useState(true);
@@ -10,7 +11,7 @@ export default function ToolStep({ name, input, output, isStreaming }) {
     }
   }, [output, isStreaming]);
 
-  const statusIcon = output ? "✅" : "⏳";
+  const statusIcon = output ? <FiCheckCircle size={14} color="var(--success)" /> : <FiLoader size={14} className="tool-spinner-icon" />;
 
   return (
     <div className={`tool-step ${!output ? "tool-step-active" : ""}`}>

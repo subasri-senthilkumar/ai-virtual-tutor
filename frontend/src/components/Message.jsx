@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2 } from "react-icons/fi";
+import { LuBookOpen } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
@@ -21,14 +23,14 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
 
   return (
     <div className={`message ${isUser ? "message-user" : "message-assistant"}`}>
-      <div className="message-avatar">{isUser ? "👤" : "🎓"}</div>
+      <div className="message-avatar">{isUser ? <FiUser size={18} /> : <LuBookOpen size={18} />}</div>
       <div className="message-content">
         {/* File attachment chips above user message */}
         {isUser && attachments && attachments.length > 0 && (
           <div className="message-attachments">
             {attachments.map((a, i) => (
               <span key={i} className="attachment-chip">
-                {a.type === "image" ? "🖼️" : a.type === "audio" ? "🎵" : "📄"} {a.name}
+                {a.type === "image" ? <FiImage size={12} /> : a.type === "audio" ? <FiMusic size={12} /> : <FiFile size={12} />} {a.name}
               </span>
             ))}
           </div>
@@ -38,7 +40,7 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
         {thinking && (
           <div className={`thinking-block ${isStreaming && !content ? "thinking-block-active" : ""}`}>
             <div className="thinking-header" onClick={() => setThinkingExpanded(!thinkingExpanded)}>
-              <span>🧠</span>
+              <FiCpu className="thinking-icon" />
               <span className="thinking-label">
                 {isStreaming && !content ? "Thinking..." : "Thought process"}
               </span>
@@ -104,7 +106,7 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
         {!isUser && content && !isStreaming && (
           <div className="message-actions">
             <button className="action-btn" onClick={speak} title="Read aloud">
-              🔊
+              <FiVolume2 size={14} />
             </button>
           </div>
         )}
