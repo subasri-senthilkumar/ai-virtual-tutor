@@ -8,7 +8,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from db import init_db
 from auth import get_current_user, register_user, login_user
 from agent import create_agent_for_user
-from conversations import create_conversation, get_conversations, get_messages, save_message, save_attachments, delete_conversation, generate_title
+from conversations import create_conversation, get_conversations, get_messages, save_message, save_attachments, delete_conversation, save_feedback, generate_title
 from input_processors import image_to_text, document_to_text, audio_to_text
 from tools.memory import list_memories
 
@@ -56,6 +56,14 @@ def conv_messages(conv_id: int, user: dict = Depends(get_current_user)):
 @app.delete("/api/conversations/{conv_id}")
 def del_conv(conv_id: int, user: dict = Depends(get_current_user)):
     delete_conversation(conv_id, user["user_id"])
+    return {"ok": True}
+
+class FeedbackRequest(BaseModel):
+    feedback: str  # "like" | "dislike" | null
+
+@app.post("/api/messages/{message_id}/feedback")
+def message_feedback(message_id: int, body: FeedbackRequest, user: dict = Depends(get_current_user)):
+    save_feedback(message_id, body.feedback)
     return {"ok": True}
 
 

@@ -33,7 +33,7 @@ def get_messages(conversation_id: int, user_id: int) -> list[dict]:
         conn.close()
         return []
     rows = conn.execute(
-        "SELECT id, role, content, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at",
+        "SELECT id, role, content, feedback, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at",
         (conversation_id,),
     ).fetchall()
     messages = []
@@ -80,6 +80,16 @@ def save_message(conversation_id: int, role: str, content: str) -> int:
     msg_id = cursor.lastrowid
     conn.close()
     return msg_id
+
+
+def save_feedback(message_id: int, feedback: str):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE messages SET feedback = ? WHERE id = ?",
+        (feedback, message_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 def save_attachments(message_id: int, attachments: list[dict]):

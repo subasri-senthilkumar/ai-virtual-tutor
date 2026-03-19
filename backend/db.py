@@ -56,4 +56,10 @@ def init_db():
             FOREIGN KEY (message_id) REFERENCES messages(id)
         );
     """)
+    # Migrate: add feedback column if missing (safe on re-runs)
+    try:
+        conn.execute("ALTER TABLE messages ADD COLUMN feedback TEXT")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
     conn.close()

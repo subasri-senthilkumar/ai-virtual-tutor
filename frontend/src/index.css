@@ -538,6 +538,8 @@ html, body, #root {
 
 .message-actions {
   margin-top: 6px;
+  display: flex;
+  gap: 2px;
 }
 
 .action-btn {
@@ -547,13 +549,25 @@ html, body, #root {
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   font-size: 14px;
-  transition: background var(--transition);
-  opacity: 0.5;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition), opacity var(--transition);
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
 }
 
 .action-btn:hover {
   background: var(--bg-tertiary);
   opacity: 1;
+}
+
+.action-active {
+  opacity: 1;
+  color: #4ade80; /* like = green */
+}
+
+.action-active.action-dislike {
+  color: #f87171; /* dislike = red */
 }
 
 /* ---- Tool Steps ---- */

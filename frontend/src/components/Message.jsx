@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2 } from "react-icons/fi";
+import { FiUser, FiImage, FiMusic, FiFile, FiCpu, FiVolume2, FiCopy, FiThumbsUp, FiThumbsDown, FiCheck } from "react-icons/fi";
 import { LuBookOpen } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -8,16 +8,37 @@ import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ToolStep from "./ToolStep";
+import { apiFetch } from "../api";
 
-export default function Message({ role, content, toolSteps, isStreaming, attachments, thinking }) {
+export default function Message({ role, content, toolSteps, isStreaming, attachments, thinking, messageId, initialFeedback }) {
   const isUser = role === "user";
   const [thinkingExpanded, setThinkingExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState(initialFeedback || null); // "like" | "dislike" | null
 
   const speak = () => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(content);
       window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const copyText = () => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
+  const giveFeedback = async (value) => {
+    const next = feedback === value ? null : value; // toggle off if same
+    setFeedback(next);
+    if (messageId) {
+      await apiFetch(`/api/messages/${messageId}/feedback`, {
+        method: "POST",
+        body: JSON.stringify({ feedback: next }),
+      });
     }
   };
 
@@ -103,8 +124,30 @@ export default function Message({ role, content, toolSteps, isStreaming, attachm
           </div>
         )}
         {isStreaming && <span className="streaming-cursor">▊</span>}
+
+        {/* Action buttons — assistant only, after streaming complete */}
         {!isUser && content && !isStreaming && (
           <div className="message-actions">
+            <button className="action-btn" onClick={copyText} title="Copy">
+              {copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
+            </button>
+            <button
+              className={`action-btn ${feedback === "like" ? "action-active" : ""}`}
+              onClick={() => giveFeedback("like")}
+              title="Like"
+            >
+              <FiThumbsUp size={14} />
+            </button>
+            {/* Show dislike only when not liked (and always when disliked) */}
+            {feedback !== "like" && (
+              <button
+                className={`action-btn ${feedback === "dislike" ? "action-active action-dislike" : ""}`}
+                onClick={() => giveFeedback("dislike")}
+                title="Dislike"
+              >
+                <FiThumbsDown size={14} />
+              </button>
+            )}
             <button className="action-btn" onClick={speak} title="Read aloud">
               <FiVolume2 size={14} />
             </button>

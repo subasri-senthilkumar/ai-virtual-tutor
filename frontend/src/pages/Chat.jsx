@@ -29,6 +29,8 @@ export default function Chat() {
       setMessages(data.map((m) => ({
         role: m.role,
         content: m.content,
+        messageId: m.id,
+        initialFeedback: m.feedback || null,
         attachments: m.attachments?.map((a) => ({ name: a.filename, type: a.file_type })),
       })));
     }
